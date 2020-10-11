@@ -2,7 +2,8 @@ var imgBlur;
 var img;
 
 function preload() {
-  imgBlur = loadShader('effect.vert', 'blur.frag');
+  imgBlur = loadShader('../js/convolution/effect.vert', '../js/convolution/blur.frag');
+  //imgBlur = loadShader('effect.vert', 'blur.frag');
 }
 
 function setup() {
