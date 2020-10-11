@@ -2,12 +2,10 @@ var imgBlur;
 var img;
 
 function preload() {
-  //imgBlur = loadShader('../js/convolution/effect.vert', '../js/convolution/blur.frag');
   imgBlur = loadShader('effect.vert', 'blur.frag');
 }
 
 function setup() {
-  alert("setup hecho")
   var imgHTML = document.getElementById('img');  
   var canvas = createCanvas(imgHTML.width, imgHTML.height, WEBGL);
   canvas.parent('p5');
