@@ -14,8 +14,7 @@
 			background: rgb(20,24,33);
 			background-color: rgb(20,24,33);
 			font-family: 'Segoe UI';
-		}
-		body h1, body p{
+			padding: 40px;
 			color: #e2e8f0;
 		}
 		body p{
@@ -37,21 +36,112 @@
 			display: inline-block;
 			box-shadow: 0px 0px 3px 4px white;
 		}
+		pre{
+			background: white;
+			width: 700px;
+			padding: 0 !important;
+			margin: 0 !important;
+			color: black;
+		}
+
+		table{
+			width: 100%;
+		}
+		table, tr, th, td{
+			border: 1px solid white;
+		}
+		td{ padding: 3px; }
 	</style>
 </head>
 <body class="demo-2">
 	<h1>ILUSIONES CON SHADERS</h1>
-	<main>
-		<div class="frame">
-				<div id="gl" data-imageOriginal="../img/ball.jpg" data-imageDepth="../img/ball-map.jpg" data-horizontalThreshold="15" data-verticalThreshold="25">
-				</div>
+	<img src="../img/ball.jpg" style="height: 600px; margin: 0 30px;">
+	<main>		
+		<div class="frame">			
+			<div id="gl" data-imageOriginal="../img/ball.jpg" data-imageDepth="../img/ball-map.jpg" data-horizontalThreshold="15" data-verticalThreshold="25">
+			</div>
 	</main>
-
+	<!--
 	<iframe width="600" height="340" frameborder="0" src="https://www.shadertoy.com/embed/MdSGWm?gui=true&t=10&paused=true&muted=false" allowfullscreen></iframe>
+	-->
+	<h2>DESCRIPCIÓN DEL FAKE3D</h2>
+	<p>El Fake 3D o tambien </p>
 
-	<p>Las 2 presentes animaciones </p>
+	<h2>¿COMO SE USA?</h2>
+
+<div style="display: table">
+	<div style="display: table-cell; padding: 5px;">		
+		<h2>CODIGO FRAGMENT SHADER</h2>
+		<pre>#ifdef GL_ES
+  precision mediump float;
+#endif
+
+uniform vec4 resolution;
+uniform vec2 mouse;
+uniform vec2 threshold;
+uniform float time;
+uniform float pixelRatio;
+uniform sampler2D image0;
+uniform sampler2D image1;
+
+
+vec2 mirrored(vec2 v) {
+  vec2 m = mod(v,2.);
+  return mix(m,2.0 - m, step(1.0 ,m));
+}
+
+void main() {
+  // uvs and textures
+  vec2 uv = pixelRatio*gl_FragCoord.xy / resolution.xy ;
+  vec2 vUv = (uv - vec2(0.5))*resolution.zw + vec2(0.5);
+  vUv.y = 1. - vUv.y;
+  vec4 tex1 = texture2D(image1,mirrored(vUv));
+  vec2 fake3d = vec2(vUv.x + (tex1.r - 0.5)*mouse.x/threshold.x, vUv.y + (tex1.r - 0.5)*mouse.y/threshold.y);
+  gl_FragColor = texture2D(image0,mirrored(fake3d));
+}
+		</pre>
+	</div>
+	<div style="display: table-cell; padding: 5px;">		
+		<h2>CODIGO VERTEX SHADER</h2>
+		<pre>attribute vec2 a_position;
+
+void main() {
+  gl_Position = vec4( a_position, 0, 1 );
+}
+		</pre>
+	</div>
+</div>
+
+	<div>
+		<h1>DISCUSIÓN</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>Ilusión</th>
+					<th>Categoria</th>
+					<th>Referencia</th>
+					<th>Tipo de interactividad (si aplica)</th>
+					<th>URL del Codigo</th>
+				</tr>				
+			</thead>
+			<tbody>
+				<tr>
+					<td>Mirando</td>
+					<td>abc</td>
+					<td>otra</td>
+					<td>nose</td>
+					<td>link</td>
+				</tr>
+			</tbody>
+		</table>
+		<hr>
+		<h3>DESCRIPCIÓN DE REFERENCIAS Y TEMAS DE INTERES</h3>
+	</div>	
 
 	<script src="../js/ilusion/app.js"></script>
 
+	<!--	EXPLICACION REFERENCIAS
+		https://tympanus.net/codrops/2019/02/20/how-to-create-a-fake-3d-image-effect-with-webgl/
+	-->
 </body>
 </html>
