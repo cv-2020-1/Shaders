@@ -4,7 +4,7 @@ let theShader;
 
 
 function preload() {
-    theShader = loadShader('../benham.vert', '../benham.frag');  
+    theShader = loadShader('../js/benham/benham.vert', '../js/benham/benham.frag');  
 }
 
 function setup() {

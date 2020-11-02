@@ -2,31 +2,16 @@
 <html lang="">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>p5.js example</title>
-  <style>
-    body {
-      padding: 0;
-      margin: 0;
-    }
-  </style>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>p5.js example</title>
+	<link rel="stylesheet" type="text/css" href="../css/base.css">
+
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js" integrity="sha512-rMaqGbYalDaQz0lWNF2L8DHPtf4NW+gSZomExS0LcsNyRS4Rmj21+dt97XfXCZE/E569eX72Bh//Jt1EpStgiA==" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/addons/p5.sound.js" integrity="sha512-KxzVm+IqxNNq0+SzT/zzd5PHxY4LPrN+v5gZJ6+JKqjeU3Cr4y/djAg5eNlKDWurn1SeKZpql/yeOMWblMSzOg==" crossorigin="anonymous"></script>
-  <script src="../benham.js"></script>
+	<script src="../js/benham/benham.js"></script>
 
-  <style type="text/css">
-		body{
-			background: rgb(20,24,33);
-			background-color: rgb(20,24,33);
-			font-family: 'Segoe UI';
-			padding: 40px;
-			color: #e2e8f0;
-		}
-		body p{
-			font-size: 18px;
-			line-height: 33px;
-		}
+	<style type="text/css">
 		main{
 			width:500px;
 			height: 500px;
@@ -38,38 +23,200 @@
 			width: 100%;
 			height: 100%;
 		}
-		iframe{
-			display: inline-block;
-			box-shadow: 0px 0px 3px 4px white;
-		}
-		pre{
-			background: white;
-			width: 700px;
-			padding: 0 !important;
-			margin: 0 !important;
-			color: black;
-		}
-
-		table{
-			width: 100%;
-		}
-		table, tr, th, td{
-			border: 1px solid white;
-		}
-		td{ padding: 3px; }
 	</style>
 </head>
 
 <body>
+	<nav>
+		<ul>
+			<li><a href="ilusionFragmentShader.html">FAKE 3D</a></li>
+			<li><a href="colorgradient.html">COLOR GRADIENT</a></li>
+			<li><a href="benham.html">BENHAM DISK</a></li>
+		</ul>
+	</nav>
+		
+  <h1>Disco de Benham</h1>	
   <main>
   </main>
-  <h1>Disco de Benham</h1>
+  <h2>DESCRIPCIÓN DEL Disco de Benham</h2>
     <p>
       El disco de benham es un disco con un patron de blancos y negros que al girar genera una ilusión optica
       llamada el efecto de color de Fechner en honor a su descubridor Gustav Fechner. El disco fue nombrado 
       así en honor al periodista, científico aficionado e inventor de juguetes Charles Benham, quien en 
       1894 creó una peonza pintada con el patrón mostrado, al cual llamó la «peonza de espectro artificial».
     </p>
+	<h2>¿COMO SE USA?</h2>
+	<p>Solamente Acerca el mouse al centro de la esfera y veras como se reduce la velocidad del dibujo</p>
+
+
+
+
+<div style="display: table">
+	<div style="display: table-cell; padding: 5px;">		
+		<h2>CODIGO FRAGMENT SHADER</h2>
+		<pre>
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 u_resolution;
+uniform vec3 u_mouse;
+uniform float u_time;
+
+#define saturate(X) clamp(X, 0.0, 1.0)
+
+float Ramp( const in float x, const in float fBegin, const in float fEnd, const in float fFeather ) {
+	float fBeginScale = 1.0 / (fFeather * 2.0);
+	float fBeginOffset = (fFeather - fBegin) / (fFeather * 2.0);
+	float fFeatherBegin = saturate(x * fBeginScale + fBeginOffset);
+
+	float fEndScale = -1.0 / (fFeather * 2.0);
+	float fEndOffset = (fEnd + fFeather) / (fFeather * 2.0);
+	float fFeatherEnd = saturate(x * fEndScale + fEndOffset);
+	
+	return min( fFeatherBegin, fFeatherEnd );
+}
+
+float Arc( float fAngle, float fAngleFeather, float fAngleBegin, float fAngleEnd, float fDist, float fDistFeather, float fDistBegin, float fDistEnd) {
+	return min(Ramp( fAngle, fAngleBegin, fAngleEnd, fAngleFeather ),Ramp( fDist, fDistBegin, fDistEnd, fDistFeather ));
+}
+
+float DiskPattern( float fAngle, float fDist, float fAngleFeather, float fDistFeather ) {
+	float fResult = 0.0;
+
+	// Semicircle	
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, -0.5, 0.25, fDist, fDistFeather, -10.0, 10.0) );
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, 0.75, 1.5, fDist, fDistFeather, -10.0, 10.0) );
+
+	const float fStripeDistWidth = 0.025;
+	const float fStripeDistSpacing = 0.05;
+	
+	float fStripeDist = 1.0 / 5.0;
+
+	float fStripeAngle1;
+	float fStripeAngle2;
+	
+	fStripeAngle1 = -0.5;
+	fStripeAngle2 = 0.25 + 1.0 / 8.0;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	
+	fStripeAngle1 = 0.25 + 1.0 / 8.0;
+	fStripeAngle2 = 0.25 + 2.0 / 8.0;
+
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+
+	fStripeAngle1 = 0.25 + 2.0 / 8.0;
+	fStripeAngle2 = 0.25 + 3.0 / 8.0;
+
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+
+	fStripeAngle1 = 0.25 + 3.0 / 8.0;
+	fStripeAngle2 = 1.5;
+
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+	fResult = max( fResult, Arc(fAngle, fAngleFeather, fStripeAngle1, fStripeAngle2, fDist, fDistFeather, fStripeDist, fStripeDist+fStripeDistWidth) );
+	fStripeDist += fStripeDistSpacing;
+
+	return fResult;
+}
+
+float GetShade(vec2 fragCoord) {
+	vec2 vUV = fragCoord.xy / u_resolution.xy;
+	
+	vec2 vPos = vUV * 2.0 - 1.0;
+	vPos.x *= u_resolution.x / u_resolution.y;
+	
+	float fAngle = atan(vPos.x, vPos.y) / (3.14159 * 2.0);
+	float fDist = length(vPos);
+	
+	const float fScale = 0.9;
+		
+	fDist /= fScale; // make it slightly smaller
+
+	float fSpeed = -5.0;
+	
+	if(u_mouse.x > 0.0) {
+		float fMouse = (u_mouse.x / u_resolution.x);
+		fSpeed = (fMouse - 0.5) * 20.0;
+	}
+	
+	fAngle = fract(fAngle + u_time * fSpeed);
+			
+	const float fShutterAngle = 1.0; // Motion blur factor
+	float fAngleFeather = abs(fSpeed * fShutterAngle * (1.0 / 60.0));
+	fAngleFeather = max( fAngleFeather, 0.001 );
+	float fDistFeather = fScale * 2.0 / u_resolution.y;
+
+	float fShade = 0.5;
+
+	fShade = 1.0 - DiskPattern( fAngle, fDist, fAngleFeather, fDistFeather );
+	
+	float fDiscOutline = Ramp( fDist, -0.5, 1.0, fDistFeather );
+	
+	fShade = mix(0.5, fShade, fDiscOutline);
+
+	//fShade = sqrt(fShade);
+
+	return fShade;
+}
+
+void main() {
+	float fShade = GetShade(gl_FragCoord.xy);
+	
+	vec3 vCol = vec3(fShade);	
+	
+	gl_FragColor = vec4(vCol,1.0);
+
+}
+
+		</pre>
+	</div>
+	<div style="display: table-cell; padding: 5px;">		
+		<h2>CODIGO VERTEX SHADER</h2>
+		<pre>#ifdef GL_ES
+precision mediump float;
+#endif
+
+
+attribute vec3 aPosition;
+
+
+void main() {
+
+  vec4 positionVec4 = vec4(aPosition, 1.0);
+
+  // scale the rect by two, and move it to the center of the screen
+  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
+
+  gl_Position = positionVec4;
+
+}			
+		</pre>
+	</div>
+</div>
+
+
   <div>
 		<h1>DISCUSIÓN</h1>
 		<table>
