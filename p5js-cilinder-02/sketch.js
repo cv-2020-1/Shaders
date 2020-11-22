@@ -1,5 +1,5 @@
-let theShader;
-let angle = 0.01;
+var theShader;
+var angle = 0.01;
 
 function preload(){
   theShader = loadShader('texture.vert','texture.frag');
@@ -7,7 +7,7 @@ function preload(){
 
 
 function setup() {
-  createCanvas(710, 400, WEBGL);
+  createCanvas(710, 400, WEBGL).parent("p5");
   noStroke();
 }
 
@@ -15,8 +15,8 @@ function draw() {
   background(0);
 
   shader(theShader);
-
-  pointLight(0, 255, 255, 0, 0, 200);  
+  lights();
+ 
 
   rotateY(angle);  
   cylinder(100, 200)

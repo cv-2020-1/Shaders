@@ -29,8 +29,7 @@ function setup() {
   
 }
 
-function draw() {
-
+function draw() {  
   // instead of just setting the active shader we are passing it to the createGraphics layer
   shaderTexture.shader(theShader);
 
@@ -46,7 +45,7 @@ function draw() {
   
   //pass the shader as a texture
   texture(shaderTexture);
-  
+
   // 3D sphere
   translate(-150, 0, 0); // move coordinate system to the left
   push();
